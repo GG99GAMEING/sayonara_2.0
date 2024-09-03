@@ -1,0 +1,840 @@
+<html><head><base href="https://sayonara-king.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sayonara King - Mobile Version</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #000;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .header {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        text-align: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    h1 {
+        font-size: 20px;
+        margin: 0;
+        color: #00ffff;
+        text-shadow: 0 0 10px #00ffff;
+    }
+    .subtitle {
+        font-size: 12px;
+        color: #ff00ff;
+        text-shadow: 0 0 5px #ff00ff;
+    }
+    .box {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    .market-inventory {
+        display: flex;
+        flex-direction: row;
+    }
+    .market, .inventory {
+        flex: 1;
+        margin-right: 5px;
+    }
+    .inventory {
+        margin-right: 0;
+    }
+    .item {
+        margin-bottom: 10px;
+        padding: 5px;
+        background-color: rgba(0, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+    .btn {
+        background-color: #00ffff;
+        color: #000;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 2px;
+        font-size: 12px;
+    }
+    .btn:hover {
+        background-color: #ff00ff;
+        color: #fff;
+    }
+    .profit-loss {
+        font-weight: bold;
+    }
+    .positive {
+        color: #00ff00;
+    }
+    .negative {
+        color: #ff0000;
+    }
+    .quantity-input {
+        width: 50px;
+        margin-right: 5px;
+        padding: 3px;
+        font-size: 12px;
+    }
+    .item-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .item-name {
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .item-price {
+        font-size: 14px;
+    }
+    .item-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .price-change {
+        font-size: 12px;
+        margin-left: 5px;
+    }
+    .price-up {
+        color: #00ff00;
+    }
+    .price-down {
+        color: #ff0000;
+    }
+    .extreme-change {
+        font-weight: bold;
+        animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    .tool-btn {
+        background-color: #ff00ff;
+        color: #fff;
+    }
+    .tool-btn:disabled {
+        background-color: #555;
+        cursor: not-allowed;
+    }
+    .loan-form {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .loan-form input, .loan-form select {
+        padding: 3px;
+        border-radius: 3px;
+        border: 1px solid #00ffff;
+        background-color: rgba(0, 255, 255, 0.1);
+        color: #fff;
+        font-size: 12px;
+    }
+    h2 {
+        font-size: 16px;
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #00ffff;
+    }
+    #priceGraphs {
+        width: 100%;
+        height: 200px;
+    }
+    .bulk-buy {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+    .bulk-buy .btn {
+        flex: 1;
+        margin: 0 2px;
+    }
+    #sellAllBtn {
+        width: 100%;
+        margin-top: 5px;
+    }
+    .tabs {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 10px;
+    }
+    .tab {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        flex: 1;
+        text-align: center;
+        cursor: pointer;
+    }
+    .tab.active {
+        background-color: #00ffff;
+        color: #000;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>Sayonara King</h1>
+    <div class="subtitle">Mobile Business Simulator</div>
+</div>
+<div class="container">
+    <div class="market-inventory">
+        <div class="market box">
+            <h2>Market</h2>
+            <div id="marketItems"></div>
+        </div>
+        <div class="inventory box">
+            <h2>Inventory</h2>
+            <div id="inventoryItems"></div>
+            <button id="sellAllBtn" class="btn">Sell All Items</button>
+        </div>
+    </div>
+    <div class="box">
+        <div class="tabs">
+            <button class="tab active" data-tab="tools">Tools</button>
+            <button class="tab" data-tab="loan">Loan</button>
+        </div>
+        <div id="toolsTab" class="tab-content active">
+            <div id="gameTools"></div>
+        </div>
+        <div id="loanTab" class="tab-content">
+            <div id="loanSystem"></div>
+        </div>
+    </div>
+    <div class="box">
+        <h2>Transaction History</h2>
+        <div id="transactionHistory"></div>
+    </div>
+    <div class="box">
+        <h2>Real-time Profit/Loss</h2>
+        <div id="profitLossCounter"></div>
+    </div>
+    <div class="box">
+        <div class="tabs">
+            <button class="tab active" data-tab="graphs">Graphs</button>
+            <button class="tab" data-tab="news">News</button>
+        </div>
+        <div id="graphsTab" class="tab-content active">
+            <div id="priceGraphs"></div>
+        </div>
+        <div id="newsTab" class="tab-content">
+            <div id="marketNews"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const items = [
+    { name: 'Samosa', emoji: '🥟', basePrice: 50, min: 1, max: 350, volatility: 5.0, priceHistory: [] },
+    { name: 'Tata Stocks', emoji: '📈', basePrice: 1000, min: 1, max: 3000, volatility: 5.0, priceHistory: [] },
+    { name: 'Phone', emoji: '📱', basePrice: 15000, min: 10000, max: 50000, volatility: 2.0, priceHistory: [] },
+    { name: 'Gold', emoji: '🥇', basePrice: 55000, min: 50000, max: 200000, volatility: 1.0, priceHistory: [] },
+    { name: 'Diamond', emoji: '💎', basePrice: 100000, min: 100000, max: 200000, volatility: 1.0, priceHistory: [] },
+    { name: 'Luxury Watch', emoji: '⌚', basePrice: 65000, min: 30000, max: 100000, volatility: 2.5, priceHistory: [] },
+    { name: 'Art Piece', emoji: '🎨', basePrice: 275000, min: 50000, max: 500000, volatility: 1.5, priceHistory: [] }
+];
+
+let cash = 100000;
+let inventory = {};
+let transactionHistory = [];
+let loan = {
+    amount: 0,
+    interest: 0,
+    remainingPayments: 0,
+    interestRate: 0.15,
+    paymentType: 'EMI'
+};
+
+const sounds = {
+    buy: new Howl({ src: ['https://example.com/sounds/buy.mp3'] }),
+    sell: new Howl({ src: ['https://example.com/sounds/sell.mp3'] }),
+    alert: new Howl({ src: ['https://example.com/sounds/alert.mp3'] }),
+    crash: new Howl({ src: ['https://example.com/sounds/crash.mp3'] }),
+    boom: new Howl({ src: ['https://example.com/sounds/boom.mp3'] })
+};
+
+function updatePrices() {
+    items.forEach(item => {
+        const previousPrice = item.currentPrice || item.basePrice;
+        const volatilityFactor = item.volatility * (Math.random() - 0.5) * 2;
+        const priceChange = item.basePrice * volatilityFactor * 0.1;
+        item.currentPrice = Math.max(item.min, Math.min(item.max, Math.round(previousPrice + priceChange)));
+        item.priceHistory.push(item.currentPrice);
+        if (item.priceHistory.length > 20) {
+            item.priceHistory.shift();
+        }
+    });
+    updateMarketDisplay();
+    updateMarketNews();
+    updateProfitLossCounter();
+    updatePriceGraphs();
+    updateTools();
+    updateLoanSystem();
+}
+
+function updateMarketDisplay() {
+    const marketItems = document.getElementById('marketItems');
+    marketItems.innerHTML = '';
+    items.forEach(item => {
+        const previousPrice = item.priceHistory[item.priceHistory.length - 2] || item.basePrice;
+        const priceChange = item.currentPrice - previousPrice;
+        const percentChange = ((priceChange / previousPrice) * 100).toFixed(2);
+        const changeClass = priceChange >= 0 ? 'price-up' : 'price-down';
+        const extremeChangeClass = Math.abs(percentChange) > 20 ? 'extreme-change' : '';
+        
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item';
+        itemElement.innerHTML = `
+            <div class="item-details">
+                <span class="item-name">${item.emoji} ${item.name}</span>
+                <span class="item-price">₹${item.currentPrice.toLocaleString()}</span>
+                <span class="price-change ${changeClass} ${extremeChangeClass}">(${priceChange >= 0 ? '+' : ''}${percentChange}%)</span>
+            </div>
+            <div class="item-actions">
+                <input type="number" class="quantity-input" data-item="${item.name}" min="1" value="1">
+                <button class="btn buy" data-item="${item.name}">Buy</button>
+            </div>
+            <div class="bulk-buy">
+                <button class="btn bulk-buy-btn" data-item="${item.name}" data-amount="1000">₹1,000</button>
+                <button class="btn bulk-buy-btn" data-item="${item.name}" data-amount="10000">₹10,000</button>
+                <button class="btn bulk-buy-btn" data-item="${item.name}" data-amount="100000">₹100,000</button>
+            </div>
+        `;
+        marketItems.appendChild(itemElement);
+    });
+    updateInventoryDisplay();
+}
+
+function updateInventoryDisplay() {
+    const inventoryItems = document.getElementById('inventoryItems');
+    inventoryItems.innerHTML = `<p>Cash: ₹${cash.toLocaleString()}</p>`;
+    Object.entries(inventory).forEach(([itemName, { quantity, averagePrice }]) => {
+        const item = items.find(i => i.name === itemName);
+        const currentValue = item.currentPrice * quantity;
+        const profit = currentValue - averagePrice * quantity;
+        const profitClass = profit >= 0 ? 'positive' : 'negative';
+        inventoryItems.innerHTML += `
+            <div class="item">
+                <span>${item.emoji} ${itemName}: ${quantity}</span>
+                <span class="profit-loss ${profitClass}">₹${profit.toLocaleString()}</span>
+                <button class="btn sell" data-item="${itemName}">Sell</button>
+            </div>
+        `;
+    });
+}
+
+function updateTransactionHistory() {
+    const transactionHistoryElement = document.getElementById('transactionHistory');
+    transactionHistoryElement.innerHTML = transactionHistory.slice(0, 5).map(transaction => `
+        <div class="item">
+            <span>${transaction.type} ${transaction.quantity} ${transaction.item} @ ₹${transaction.price.toLocaleString()}</span>
+            <span>${new Date(transaction.time).toLocaleTimeString()}</span>
+        </div>
+    `).join('');
+}
+
+function updateMarketNews() {
+    const newsElement = document.getElementById('marketNews');
+    const randomItem = items[Math.floor(Math.random() * items.length)];
+    const previousPrice = randomItem.priceHistory[randomItem.priceHistory.length - 2] || randomItem.basePrice;
+    const priceChange = randomItem.currentPrice - previousPrice;
+    const percentChange = ((priceChange / previousPrice) * 100).toFixed(2);
+    
+    let newsContent;
+    if (Math.abs(percentChange) > 50) {
+        newsContent = `MARKET SHOCK: ${randomItem.name} prices ${priceChange > 0 ? 'skyrocket' : 'plummet'} by ${Math.abs(percentChange)}%!`;
+        sounds.crash.play();
+    } else if (Math.abs(percentChange) > 20) {
+        newsContent = `${randomItem.name} market experiences significant ${priceChange > 0 ? 'surge' : 'drop'} of ${Math.abs(percentChange)}%`;
+        sounds.boom.play();
+    } else {
+        newsContent = `${randomItem.name} prices ${priceChange > 0 ? 'rise' : 'fall'} by ${Math.abs(percentChange)}%`;
+    }
+    
+    newsElement.innerHTML = `<p>${new Date().toLocaleTimeString()}: ${newsContent}</p>` + newsElement.innerHTML;
+    if (newsElement.childElementCount > 5) {
+        newsElement.removeChild(newsElement.lastChild);
+    }
+}
+
+function updateProfitLossCounter() {
+    const profitLossElement = document.getElementById('profitLossCounter');
+    let totalProfitLoss = 0;
+    profitLossElement.innerHTML = '';
+    
+    Object.entries(inventory).forEach(([itemName, { quantity, averagePrice }]) => {
+        const item = items.find(i => i.name === itemName);
+        const currentValue = item.currentPrice * quantity;
+        const profit = currentValue - averagePrice * quantity;
+        totalProfitLoss += profit;
+        const profitLossClass = profit >= 0 ? 'positive' : 'negative';
+        profitLossElement.innerHTML += `
+            <p>${item.emoji} ${itemName}: <span class="${profitLossClass}">₹${profit.toLocaleString()}</span></p>
+        `;
+    });
+    
+    const totalProfitLossClass = totalProfitLoss >= 0 ? 'positive' : 'negative';
+    profitLossElement.innerHTML += `
+        <p>Total Profit/Loss: <span class="${totalProfitLossClass}">₹${totalProfitLoss.toLocaleString()}</span></p>
+    `;
+}
+
+function updatePriceGraphs() {
+    const priceGraphsElement = document.getElementById('priceGraphs');
+    priceGraphsElement.innerHTML = '<canvas id="priceChart"></canvas>';
+    
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 20}, (_, i) => i + 1),
+            datasets: items.map(item => ({
+                label: item.name,
+                data: item.priceHistory,
+                borderColor: getRandomColor(),
+                fill: false
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+}
+
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function updateTools() {
+    const toolsElement = document.getElementById('gameTools');
+    toolsElement.innerHTML = '';
+    
+    const tools = [
+        { name: 'Market Analysis', cost: 5000, description: 'Get insights on market trends' },
+        { name: 'Price Predictor', cost: 10000, description: 'Predict future prices with 70% accuracy' },
+        { name: 'Auto Trader', cost: 25000, description: 'Automatically buy/sell based on set parameters' }
+    ];
+    
+    tools.forEach(tool => {
+        toolsElement.innerHTML += `
+            <div class="item">
+                <h3>${tool.name}</h3>
+                <p>${tool.description}</p>
+                <p>Cost: ₹${tool.cost.toLocaleString()}</p>
+                <button class="btn tool-btn" data-tool="${tool.name}" ${cash < tool.cost ? 'disabled' : ''}>
+                    Activate
+                </button>
+            </div>
+        `;
+    });
+}
+
+function updateLoanSystem() {
+    const loanElement = document.getElementById('loanSystem');
+    if (loan.amount > 0) {
+        loanElement.innerHTML = `
+            <p>Current Loan: ₹${loan.amount.toLocaleString()}</p>
+            <p>Interest: ₹${loan.interest.toLocaleString()}</p>
+            <p>Remaining Payments: ${loan.remainingPayments}</p>
+            <button class="btn" id="repayLoanBtn">Repay Loan</button>
+        `;
+    } else {
+        loanElement.innerHTML = `
+            <div class="loan-form">
+                <input type="number" id="loanAmount" placeholder="Loan Amount" min="1000" step="1000">
+                <select id="loanType">
+                    <option value="EMI">EMI</option>
+                    <option value="InterestOnly">Interest-Only</option>
+                </select>
+                <input type="number" id="loanTerm" placeholder="Loan Term (months)" min="1" max="12">
+                <button class="btn" id="takeLoanBtn">Take Loan</button>
+            </div>
+        `;
+    }
+}
+
+function buy(itemName, quantity) {
+    const item = items.find(i => i.name === itemName);
+    const totalCost = item.currentPrice * quantity;
+    
+    if (cash >= totalCost) {
+        cash -= totalCost;
+        if (inventory[itemName]) {
+            inventory[itemName].quantity += quantity;
+            inventory[itemName].averagePrice = (inventory[itemName].averagePrice * inventory[itemName].quantity + totalCost) / (inventory[itemName].quantity + quantity);
+        } else {
+            inventory[itemName] = { quantity: quantity, averagePrice: item.currentPrice };
+        }
+        transactionHistory.unshift({ type: 'Bought', item: itemName, quantity: quantity, price: item.currentPrice, time: Date.now() });
+        sounds.buy.play();
+        updateInventoryDisplay();
+        updateTransactionHistory();
+        updateProfitLossCounter();
+    } else {
+        alert('Not enough cash!');
+    }
+}
+
+function bulkBuy(itemName, amount) {
+    const item = items.find(i => i.name === itemName);
+    const quantity = Math.floor(amount / item.currentPrice);
+    if (quantity > 0) {
+        buy(itemName, quantity);
+    } else {
+        alert('Not enough cash for bulk buy!');
+    }
+}
+
+function sell(itemName, quantity = null) {
+    if (inventory[itemName]) {
+        const item = items.find(i => i.name === itemName);
+        const availableQuantity = inventory[itemName].quantity;
+        
+        if (quantity === null) {
+            quantity = availableQuantity;
+        } else if (quantity > availableQuantity) {
+            alert('Not enough items to sell!');
+            return;
+        }
+
+        const totalEarned = item.currentPrice * quantity;
+        cash += totalEarned;
+        inventory[itemName].quantity -= quantity;
+        if (inventory[itemName].quantity === 0) {
+            delete inventory[itemName];
+        }
+        transactionHistory.unshift({ type: 'Sold', item: itemName, quantity: quantity, price: item.currentPrice, time: Date.now() });
+        sounds.sell.play();
+        updateInventoryDisplay();
+        updateTransactionHistory();
+        updateProfitLossCounter();
+    } else {
+        alert('No items to sell!');
+    }
+}
+
+function sellAll() {
+    Object.keys(inventory).forEach(itemName => {
+        sell(itemName);
+    });
+}
+
+function takeLoan() {
+    const amount = parseInt(document.getElementById('loanAmount').value);
+    const type = document.getElementById('loanType').value;
+    const term = parseInt(document.getElementById('loanTerm').value);
+
+    if (isNaN(amount) || amount < 1000 || isNaN(term) || term < 1 || term > 12) {
+        alert('Please enter valid loan details.');
+        return;
+    }
+
+    loan.amount = amount;
+    loan.interestRate = 0.15;
+    loan.paymentType = type;
+
+    if (type === 'EMI') {
+        const monthlyInterestRate = loan.interestRate / 12;
+        const emi = (amount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, term)) / (Math.pow(1 + monthlyInterestRate, term) - 1);
+        loan.remainingPayments = term;
+        loan.emi = emi;
+        loan.interest = (emi * term) - amount;
+    } else {
+        loan.interest = amount * loan.interestRate * (term / 12);
+        loan.remainingPayments = term;
+    }
+
+    cash += amount;
+    updateInventoryDisplay();
+    updateLoanSystem();
+    alert(`Loan of ₹${amount.toLocaleString()} approved. Don't forget to repay!`);
+}
+
+function repayLoan() {
+    if (loan.paymentType === 'EMI') {
+        if (cash >= loan.emi) {
+            cash -= loan.emi;
+            loan.amount -= (loan.emi - (loan.amount * (loan.interestRate / 12)));
+            loan.remainingPayments--;
+        } else {
+            alert('Not enough cash to make the EMI payment!');
+            return;
+        }
+    } else {
+        const interestPayment = loan.interest / loan.remainingPayments;
+        if (cash >= interestPayment) {
+            cash -= interestPayment;
+            loan.remainingPayments--;
+            if (loan.remainingPayments === 0) {
+                if (cash >= loan.amount) {
+                    cash -= loan.amount;
+                    loan.amount = 0;
+                } else {
+                    alert('Not enough cash to repay the principal! Loan term extended.');
+                    loan.remainingPayments = 1;
+                    return;
+                }
+            }
+        } else {
+            alert('Not enough cash to make the interest payment!');
+            return;
+        }
+    }
+
+    if (loan.remainingPayments === 0) {
+        loan = {
+            amount: 0,
+            interest: 0,
+            remainingPayments: 0,
+            interestRate: 0.15,
+            paymentType: 'EMI'
+        };
+        alert('Loan fully repaid!');
+    }
+
+    updateInventoryDisplay();
+    updateLoanSystem();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updatePrices();
+    setInterval(updatePrices, 10000);
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('buy')) {
+            const itemName = e.target.getAttribute('data-item');
+            const quantityInput = e.target.parentElement.querySelector('.quantity-input');
+            const quantity = parseInt(quantityInput.value);
+            buy(itemName, quantity);
+        } else if (e.target.classList.contains('bulk-buy-btn')) {
+            const itemName = e.target.getAttribute('data-item');
+            const amount = parseInt(e.target.getAttribute('data-amount'));
+            bulkBuy(itemName, amount);
+        } else if (e.target.classList.contains('sell')) {
+            const itemName = e.target.getAttribute('data-item');
+            sell(itemName);
+        } else if (e.target.id === 'sellAllBtn') {
+            sellAll();
+        } else if (e.target.classList.contains('tool-btn')) {
+            const toolName = e.target.getAttribute('data-tool');
+            alert(`${toolName} activated!`);
+        } else if (e.target.id === 'takeLoanBtn') {
+            takeLoan();
+        } else if (e.target.id === 'repayLoanBtn') {
+            repayLoan();
+        } else if (e.target.classList.contains('tab')) {
+            const tabName = e.target.getAttribute('data-tab');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+    });
+
+    const savedState = localStorage.getItem('sayonaraKingState');
+    if (savedState) {
+        const loadedState = JSON.parse(savedState);
+        cash = loadedState.cash;
+        inventory = loadedState.inventory;
+        transactionHistory = loadedState.transactionHistory;
+        loan = loadedState.loan;
+        updateMarketDisplay();
+        updateInventoryDisplay();
+        updateTransactionHistory();
+        updateProfitLossCounter();
+        updateTools();
+        updateLoanSystem();
+    }
+});
+
+setInterval(() => {
+    const gameState = {
+        cash,
+        inventory,
+        transactionHistory,
+        loan
+    };
+    localStorage.setItem('sayonaraKingState', JSON.stringify(gameState));
+}, 5000);
+</script>
+<!-- Save Game Button HTML -->
+<div class="save-game">
+    <button id="saveGameBtn" class="btn">Save Game</button>
+</div>
+
+<style>
+    /* Save Game Button CSS */
+    .save-game {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1000;
+    }
+
+    #saveGameBtn {
+        background-color: #00ff00;
+        color: #000;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #saveGameBtn:hover {
+        background-color: #007700;
+        color: #fff;
+    }
+</style>
+
+<script>
+    // Save Game Functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        // Load saved game state on load
+        const savedState = localStorage.getItem('sayonaraKingState');
+        if (savedState) {
+            const loadedState = JSON.parse(savedState);
+            cash = loadedState.cash;
+            inventory = loadedState.inventory;
+            transactionHistory = loadedState.transactionHistory;
+            loan = loadedState.loan;
+            updateMarketDisplay();
+            updateInventoryDisplay();
+            updateTransactionHistory();
+            updateProfitLossCounter();
+            updateTools();
+            updateLoanSystem();
+        }
+
+        // Add event listener to save game button
+        document.getElementById('saveGameBtn').addEventListener('click', () => {
+            const gameState = {
+                cash,
+                inventory,
+                transactionHistory,
+                loan
+            };
+            localStorage.setItem('sayonaraKingState', JSON.stringify(gameState));
+            alert('Game saved successfully!');
+        });
+    });
+</script>
+<!-- Save Game Button HTML -->
+<div class="save-game">
+    <button id="saveGameBtn" class="btn">Save Game</button>
+</div>
+
+<style>
+    /* Save Game Button CSS */
+    .save-game {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1000;
+    }
+
+    #saveGameBtn {
+        background-color: #00ff00;
+        color: #000;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #saveGameBtn:hover {
+        background-color: #007700;
+        color: #fff;
+    }
+</style>
+<script>
+    // Bug fix: Prevent price updates during loan entry
+    let isLoanEntryActive = false;
+
+    function updatePrices() {
+        if (isLoanEntryActive) return; // Skip price update if loan entry is active
+
+        items.forEach(item => {
+            const previousPrice = item.currentPrice || item.basePrice;
+            const volatilityFactor = item.volatility * (Math.random() - 0.5) * 2;
+            const priceChange = item.basePrice * volatilityFactor * 0.1;
+            item.currentPrice = Math.max(item.min, Math.min(item.max, Math.round(previousPrice + priceChange)));
+            item.priceHistory.push(item.currentPrice);
+            if (item.priceHistory.length > 20) {
+                item.priceHistory.shift();
+            }
+        });
+        updateMarketDisplay();
+        updateMarketNews();
+        updateProfitLossCounter();
+        updatePriceGraphs();
+        updateTools();
+        updateLoanSystem();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const loanAmountInput = document.getElementById('loanAmount');
+        const loanTermInput = document.getElementById('loanTerm');
+
+        if (loanAmountInput && loanTermInput) {
+            loanAmountInput.addEventListener('focus', () => {
+                isLoanEntryActive = true;  // Pause updates when loan input is focused
+            });
+
+            loanTermInput.addEventListener('focus', () => {
+                isLoanEntryActive = true;
+            });
+
+            loanAmountInput.addEventListener('blur', () => {
+                isLoanEntryActive = false; // Resume updates when input focus is lost
+            });
+
+            loanTermInput.addEventListener('blur', () => {
+                isLoanEntryActive = false;
+            });
+        }
+
+        // Initialize price updates
+        setInterval(() => {
+            updatePrices();
+        }, 4000); // Update every 4 seconds
+    });
+</script>
+</body>
+</html>
