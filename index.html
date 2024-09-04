@@ -447,8 +447,6 @@ function updateTools() {
     toolsElement.innerHTML = '';
     
     const tools = [
-        { name: 'Market Analysis', cost: 5000, description: 'Get insights on market trends' },
-        { name: 'Price Predictor', cost: 10000, description: 'Predict future prices with 70% accuracy' },
         { name: 'Auto Trader', cost: 25000, description: 'Automatically buy/sell based on set parameters' }
     ];
     
@@ -835,6 +833,458 @@ setInterval(() => {
             updatePrices();
         }, 4000); // Update every 4 seconds
     });
+// Tool functionalities
+let autoTraderActive = false;
+
+// Activate tool actions
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tool-btn')) {
+        const toolName = e.target.getAttribute('data-tool');
+
+        } else if (toolName === 'Auto Trader' && cash >= 25000) {
+            autoTraderActive = true;
+            cash -= 25000;
+        } else {
+        }
+
+        updateInventoryDisplay();
+        updateTools();
+    }
+});
+
+// Periodic checks
+setInterval(() => {
+    showMarketAnalysis();
+    predictPrices();
+    autoTrade();
+}, 10000); // Check every 10 seconds
+// Store manually entered values for quantity and loan inputs
+let manualInputs = {
+    quantities: {},
+    loanAmount: '',
+    loanTerm: ''
+};
+
+// Save manually entered values before price update
+function saveManualInputs() {
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        manualInputs.quantities[input.dataset.item] = input.value;
+    });
+    manualInputs.loanAmount = document.getElementById('loanAmount')?.value || '';
+    manualInputs.loanTerm = document.getElementById('loanTerm')?.value || '';
+}
+
+// Restore manually entered values after price update
+function restoreManualInputs() {
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        if (manualInputs.quantities[input.dataset.item]) {
+            input.value = manualInputs.quantities[input.dataset.item];
+        }
+    });
+    if (document.getElementById('loanAmount')) {
+        document.getElementById('loanAmount').value = manualInputs.loanAmount;
+    }
+    if (document.getElementById('loanTerm')) {
+        document.getElementById('loanTerm').value = manualInputs.loanTerm;
+    }
+}
+
+// Modified updatePrices function with manual inputs save and restore
+function updatePrices() {
+    saveManualInputs(); // Save inputs before updating prices
+
+    items.forEach(item => {
+        const previousPrice = item.currentPrice || item.basePrice;
+        const volatilityFactor = item.volatility * (Math.random() - 0.5) * 2;
+        const priceChange = item.basePrice * volatilityFactor * 0.1;
+        item.currentPrice = Math.max(item.min, Math.min(item.max, Math.round(previousPrice + priceChange)));
+        item.priceHistory.push(item.currentPrice);
+        if (item.priceHistory.length > 20) {
+            item.priceHistory.shift();
+        }
+    });
+
+    updateMarketDisplay();
+    updateMarketNews();
+    updateProfitLossCounter();
+    updatePriceGraphs();
+    updateTools();
+    updateLoanSystem();
+
+    restoreManualInputs(); // Restore inputs after updating prices
+}
+
+// Check Loan System Errors
+function checkLoanSystemErrors() {
+    let errors = false; // Track if any errors are found
+    if (loan.amount < 0) {
+        alert('Error: Loan amount cannot be negative!');
+        loan.amount = 0;
+        errors = true;
+    }
+    if (loan.interest < 0) {
+        alert('Error: Interest cannot be negative!');
+        loan.interest = 0;
+        errors = true;
+    }
+    if (loan.remainingPayments < 0) {
+        alert('Error: Remaining payments cannot be negative!');
+        loan.remainingPayments = 0;
+        errors = true;
+    }
+    if (loan.interestRate < 0 || loan.interestRate > 1) {
+        alert('Error: Interest rate must be between 0 and 1!');
+        loan.interestRate = 0.15; // Default to 15%
+        errors = true;
+    }
+
+    return errors;
+}
+
+// Call this function after updateLoanSystem to validate loan details
+document.addEventListener('DOMContentLoaded', () => {
+    checkLoanSystemErrors(); // Initial check when the game loads
+
+    // Re-check whenever loan details are updated
+    document.addEventListener('input', (e) => {
+        if (e.target.id === 'loanAmount' || e.target.id === 'loanTerm') {
+            if (checkLoanSystemErrors()) {
+                e.target.focus(); // Focus back on the input field if there's an error
+            }
+        }
+    });
+});
+
+// Add this line to ensure price updates consider manual inputs
+setInterval(updatePrices, 10000); // Price update interval
+// Tool functionalities
+let autoTraderActive = false;
+let autoTradeSettings = {};
+
+// Activate tool actions
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tool-btn')) {
+        const toolName = e.target.getAttribute('data-tool');
+
+        } else if (toolName === 'Auto Trader' && cash >= 25000) {
+            autoTraderActive = true;
+            cash -= 25000;
+            createAutoTraderBox(); // Create Auto Trader configuration box
+            alert('Auto Trader purchased! Configure your trading parameters below.');
+        } else if (e.target.classList.contains('use-btn')) {
+            // Use the tool functionality when 'Use' is clicked
+            useTool(toolName.replace(' Use', ''));
+        } else {
+            alert('Not enough cash or tool already activated!');
+        }
+
+        updateInventoryDisplay();
+        updateTools();
+    }
+});
+
+    const newsElement = document.getElementById('marketNews');
+    if (toolName === 'Market Analysis' && marketAnalysisActive) {
+        const trends = items.map(item => {
+            const averagePrice = item.priceHistory.reduce((sum, price) => sum + price, 0) / item.priceHistory.length;
+            return `${item.name}: Average Price ₹${averagePrice.toFixed(2)}`;
+        }).join('<br>');
+        newsElement.innerHTML = `<p>${new Date().toLocaleTimeString()}: Market Analysis Updated</p><p>${trends}</p>` + newsElement.innerHTML;
+    } else if (toolName === 'Price Predictor' && pricePredictorActive) {
+        items.forEach(item => {
+            if (Math.random() < 0.7) { // 70% accuracy
+                const predictedChange = (Math.random() - 0.5) * item.volatility * item.basePrice * 0.2;
+                item.predictedPrice = Math.max(item.min, Math.min(item.max, item.currentPrice + predictedChange));
+            }
+        });
+        const predictions = items.map(item => `${item.name}: Predicted Price ₹${item.predictedPrice.toFixed(2)}`).join('<br>');
+        newsElement.innerHTML = `<p>${new Date().toLocaleTimeString()}: Price Predictor Updated</p><p>${predictions}</p>` + newsElement.innerHTML;
+    }
+}
+
+// Create Auto Trader configuration box for manual settings
+function createAutoTraderBox() {
+    const autoTraderBox = document.createElement('div');
+    autoTraderBox.className = 'box';
+    autoTraderBox.style.marginTop = '10px'; // Add margin to match theme
+    autoTraderBox.innerHTML = `
+        <h2>Auto Trader Configuration</h2>
+        <div>
+            <label for="autoItemSelect">Select Item:</label>
+            <select id="autoItemSelect">
+                ${items.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label for="buyPrice">Buy below price (₹):</label>
+            <input type="number" id="buyPrice" placeholder="Enter buy price">
+        </div>
+        <div>
+            <label for="sellPrice">Sell above price (₹):</label>
+            <input type="number" id="sellPrice" placeholder="Enter sell price">
+        </div>
+        <button class="btn" id="setAutoTrade">Set Auto Trade</button>
+        <button class="btn" id="startAutoTrade">Start Auto Trading</button>
+    `;
+    document.querySelector('.container').appendChild(autoTraderBox);
+
+    document.getElementById('setAutoTrade').addEventListener('click', () => {
+        const selectedItem = document.getElementById('autoItemSelect').value;
+        const buyPrice = parseInt(document.getElementById('buyPrice').value);
+        const sellPrice = parseInt(document.getElementById('sellPrice').value);
+
+        if (isNaN(buyPrice) || isNaN(sellPrice) || buyPrice <= 0 || sellPrice <= 0 || buyPrice >= sellPrice) {
+            alert('Please enter valid buy/sell prices. Buy price should be less than sell price.');
+            return;
+        }
+
+        autoTradeSettings[selectedItem] = { buyPrice, sellPrice };
+        alert(`Auto Trader configured for ${selectedItem}: Buy below ₹${buyPrice} and sell above ₹${sellPrice}.`);
+    });
+
+    document.getElementById('startAutoTrade').addEventListener('click', () => {
+        startAutoTrading();
+    });
+}
+
+// Manual Auto Trading based on user's configurations
+
+function startAutoTrading() {
+    if (!autoTraderActive) {
+        alert('Auto Trader is not activated.');
+        return;
+    }
+
+    setInterval(() => {
+        Object.entries(autoTradeSettings).forEach(([itemName, { buyPrice, sellPrice }]) => {
+            const item = items.find(i => i.name === itemName);
+            if (!item) return;
+
+            if (item.currentPrice < buyPrice && cash > item.currentPrice) {
+                buy(item.name, 1);
+                alert(`Auto Trader: Bought ${item.name} below ₹${buyPrice}`);
+            } else if (item.currentPrice > sellPrice && inventory[item.name]?.quantity > 0) {
+                sell(item.name, 1);
+                alert(`Auto Trader: Sold ${item.name} above ₹${sellPrice}`);
+            }
+        });
+    }, 10000); // Check every 10 seconds
+}
+}
+
+// Ensure price updates continue without interference
+function updatePrices() {
+    saveManualInputs(); // Save inputs before updating prices
+
+    items.forEach(item => {
+        const previousPrice = item.currentPrice || item.basePrice;
+        const volatilityFactor = item.volatility * (Math.random() - 0.5) * 2;
+        const priceChange = item.basePrice * volatilityFactor * 0.1;
+        item.currentPrice = Math.max(item.min, Math.min(item.max, Math.round(previousPrice + priceChange)));
+        item.priceHistory.push(item.currentPrice);
+        if (item.priceHistory.length > 20) {
+            item.priceHistory.shift();
+        }
+    });
+
+    updateMarketDisplay();
+    updateMarketNews();
+    updateProfitLossCounter();
+    updatePriceGraphs();
+    updateTools();
+    updateLoanSystem();
+
+    restoreManualInputs(); // Restore inputs after updating prices
+}
+
+// Add the interval to update prices
+setInterval(updatePrices, 10000); // Update every 10 seconds
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Function to switch between tabs
+        function switchTab(tabName) {
+            // Remove 'active' class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add 'active' class to the selected tab and content
+            document.querySelector(`button[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        // Attach click event listener to tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        // Initialize tool content setup
+        updateToolContents();
+
+        // Ensure prices are updated periodically
+        setInterval(updatePrices, 10000); // Every 10 seconds
+    });
+
+    // Function to update the content of the tools
+    function updateToolContents() {
+        if (marketAnalysisActive) {
+            const trends = items.map(item => {
+                const averagePrice = item.priceHistory.reduce((sum, price) => sum + price, 0) / item.priceHistory.length;
+                return `<p>${item.name}: Average Price ₹${averagePrice.toFixed(2)}</p>`;
+            }).join('');
+            document.getElementById('marketAnalysisContent').innerHTML = trends;
+        }
+
+        if (pricePredictorActive) {
+            items.forEach(item => {
+                if (Math.random() < 0.7) { // 70% accuracy
+                    const predictedChange = (Math.random() - 0.5) * item.volatility * item.basePrice * 0.2;
+                    item.predictedPrice = Math.max(item.min, Math.min(item.max, item.currentPrice + predictedChange));
+                }
+            });
+            const predictions = items.map(item => `<p>${item.name}: Predicted Price ₹${item.predictedPrice.toFixed(2)}</p>`).join('');
+            document.getElementById('pricePredictorContent').innerHTML = predictions;
+        }
+
+        if (autoTraderActive) {
+            document.getElementById('autoTraderConfig').innerHTML = `
+                <h2>Auto Trader Configuration</h2>
+                <div>
+                    <label for="autoItemSelect">Select Item:</label>
+                    <select id="autoItemSelect">
+                        ${items.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label for="buyPrice">Buy below price (₹):</label>
+                    <input type="number" id="buyPrice" placeholder="Enter buy price">
+                </div>
+                <div>
+                    <label for="sellPrice">Sell above price (₹):</label>
+                    <input type="number" id="sellPrice" placeholder="Enter sell price">
+                </div>
+                <button class="btn" id="setAutoTrade">Set Auto Trade</button>
+            `;
+        }
+    }
+
+    // Add the rest of your script here (for tools, price updates, etc.)
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Initially, disable Market Analysis and Price Predictor, and Auto Trader is inactive
+    let marketAnalysisActive = false;
+    let pricePredictorActive = false;
+    let autoTraderActive = false;
+    let autoTradeSettings = {};
+
+    // Remove Market Analysis and Price Predictor tools from the UI
+    function removeDisabledTools() {
+        const toolButtons = document.querySelectorAll('.tool-btn');
+        toolButtons.forEach(button => {
+            const toolName = button.getAttribute('data-tool');
+            if (toolName === 'Market Analysis' || toolName === 'Price Predictor') {
+                button.parentElement.style.display = 'none'; // Hide these tools
+            }
+        });
+    }
+
+    // Initialize Auto Trader UI
+    function initializeAutoTrader() {
+        const autoTraderTool = document.querySelector('.tool-btn[data-tool="Auto Trader"]');
+        if (autoTraderTool) {
+            autoTraderTool.addEventListener('click', () => {
+                if (cash >= 25000) {
+                    autoTraderActive = true; // Activate Auto Trader when purchased
+                    cash -= 25000;
+                    createAutoTraderBox();
+                    alert('Auto Trader activated! Configure your trading parameters below.');
+                    updateInventoryDisplay();
+                } else {
+                    alert('Not enough cash to activate Auto Trader!');
+                }
+            });
+        }
+    }
+
+    // Create Auto Trader configuration box for manual settings
+    function createAutoTraderBox() {
+        const autoTraderBox = document.createElement('div');
+        autoTraderBox.className = 'box';
+        autoTraderBox.style.marginTop = '10px';
+        autoTraderBox.innerHTML = `
+            <h2>Auto Trader Configuration</h2>
+            <div>
+                <label for="autoItemSelect">Select Item:</label>
+                <select id="autoItemSelect">
+                    ${items.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
+                </select>
+            </div>
+            <div>
+                <label for="buyPrice">Buy below price (₹):</label>
+                <input type="number" id="buyPrice" placeholder="Enter buy price">
+            </div>
+            <div>
+                <label for="sellPrice">Sell above price (₹):</label>
+                <input type="number" id="sellPrice" placeholder="Enter sell price">
+            </div>
+            <button class="btn" id="setAutoTrade">Set Auto Trade</button>
+            <button class="btn" id="startAutoTrade">Start Auto Trading</button>
+        `;
+        document.querySelector('.container').appendChild(autoTraderBox);
+
+        // Set Auto Trade configuration
+        document.getElementById('setAutoTrade').addEventListener('click', () => {
+            const selectedItem = document.getElementById('autoItemSelect').value;
+            const buyPrice = parseInt(document.getElementById('buyPrice').value);
+            const sellPrice = parseInt(document.getElementById('sellPrice').value);
+
+            if (isNaN(buyPrice) || isNaN(sellPrice) || buyPrice <= 0 || sellPrice <= 0 || buyPrice >= sellPrice) {
+                alert('Please enter valid buy/sell prices. Buy price should be less than sell price.');
+                return;
+            }
+
+            autoTradeSettings[selectedItem] = { buyPrice, sellPrice };
+            alert(`Auto Trader configured for ${selectedItem}: Buy below ₹${buyPrice} and sell above ₹${sellPrice}.`);
+        });
+
+        // Start Auto Trading
+        document.getElementById('startAutoTrade').addEventListener('click', () => {
+            startAutoTrading();
+        });
+    }
+
+    // Function for auto trading based on user's configurations
+    function startAutoTrading() {
+        if (!autoTraderActive) {
+            alert('Auto Trader is not activated.');
+            return;
+        }
+
+        setInterval(() => {
+            Object.entries(autoTradeSettings).forEach(([itemName, { buyPrice, sellPrice }]) => {
+                const item = items.find(i => i.name === itemName);
+                if (!item) return;
+
+                if (item.currentPrice < buyPrice && cash > item.currentPrice) {
+                    buy(item.name, 1);
+                    alert(`Auto Trader: Bought ${item.name} below ₹${buyPrice}`);
+                } else if (item.currentPrice > sellPrice && inventory[item.name]?.quantity > 0) {
+                    sell(item.name, 1);
+                    alert(`Auto Trader: Sold ${item.name} above ₹${sellPrice}`);
+                }
+            });
+        }, 10000); // Check every 10 seconds
+    }
+
+    // Initialize and hide disabled tools
+    removeDisabledTools();
+    initializeAutoTrader();
+});
+
 </script>
 </body>
 </html>
